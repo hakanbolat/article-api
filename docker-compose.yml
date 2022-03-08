@@ -1,0 +1,75 @@
+version: "3.7"
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  postgres_data:
+
+services:
+  composer:
+    image: composer:latest
+    environment:
+      - COMPOSER_CACHE_DIR=/app/.cache/composer
+    volumes:
+      - ./:/app
+  node:
+    image: "node:latest"
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - "8081"
+    command: "npm start"
+  postgres:
+    container_name: "lepp-postgres"
+    image: 'postgres:12'
+    restart: unless-stopped
+    volumes:
+      - .docker/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+    networks:
+      - backend
+    ports:
+      - '5432:5432'
+  php:
+    container_name: "lepp-php"
+    build:
+      context: .docker/php
+      network: host
+      args:
+        DC_USER_ID: ${DC_USER_ID}
+        DC_GROUP_ID: ${DC_GROUP_ID}
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/web/
+    environment:
+      docker: "true"
+    networks:
+      - backend
+  nginx:
+    container_name: "lepp-nginx"
+    build:
+      context: .docker/nginx
+      network: host
+    depends_on:
+      - php
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - ./:/web/
+      - .docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - backend
+      - frontend
+    ports:
+      - 80:80
+      - 443:443

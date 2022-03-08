@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Specification - Swagger UI</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.6.1/swagger-ui.css">
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.6.1/swagger-ui-bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.6.1/swagger-ui-standalone-preset.js"></script>
+<script>
+    window.onload = function () {
+        const ui = SwaggerUIBundle({
+            spec: {{ spec|raw }},
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            operationsSorter: (a, b) => {
+                var methodsOrder = ["post", "get", "put", "delete", "patch", "options", "trace"];
+                var result = methodsOrder.indexOf( a.get("method") ) - methodsOrder.indexOf( b.get("method") );
+                if (result === 0) {
+                    result = a.get("path").localeCompare(b.get("path"));
+                }
+                return result;
+            },
+        })
+        window.ui = ui
+    }
+</script>
+</body>
+</html>
