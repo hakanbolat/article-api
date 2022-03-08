@@ -9,8 +9,8 @@ docker-compose up -d
 docker-compose run composer install
 ```
 
-## for API swagger documentation open the below link in browser
-Run into main path for calculate vacations with a specified year:
+## API swagger documentation
+for API swagger documentation open the below link in browser
 ```
 http://localhost/docs/v1
 ```
